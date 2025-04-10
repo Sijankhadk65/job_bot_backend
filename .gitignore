@@ -1,0 +1,12 @@
+# Data Folders
+attachments/
+temp_uploads/
+.pycache/
+__pycache__/
+.conda/
+data/
+
+# Environment Variables
+.env
+
+*.pyc

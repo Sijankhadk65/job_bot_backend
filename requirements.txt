@@ -1,0 +1,9 @@
+pandas
+openpyxl
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+celery[redis]
+flower
+redis

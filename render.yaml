@@ -1,0 +1,63 @@
+services:
+  # 1) FastAPI Web Service
+  - type: web
+    name: fastapi-app
+    region: ohio
+    runtime: python
+
+    # Install dependencies
+    buildCommand: "pip install -r requirements.txt"
+
+    # Start FastAPI using Gunicorn/Uvicorn
+    startCommand: "gunicorn main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:10000"
+
+    # Decide if you want auto-deploys on every commit.
+    # Set to false if you want to deploy only on manual triggers.
+    autoDeploy: true
+
+    # Environment variables: store the Upstash Redis URL in an env var called CELERY_BROKER_URL.
+    # Typically you'd set this in the Render Dashboard under "Environment" or "Secrets"
+    # rather than hardcode it here.
+    envVars:
+      - key: CELERY_BROKER_URL
+        # Example only — replace with your Upstash Redis URL.
+        value: "rediss://:YOUR_UPSTASH_PASSWORD@YOUR_UPSTASH_HOST:PORT"
+
+  # 2) Celery Worker
+  - type: worker
+    name: celery-worker
+    region: ohio
+    runtime: python
+
+    buildCommand: "pip install -r requirements.txt"
+
+    # This assumes your Celery application is defined in a module named `worker.py`
+    # with a Celery instance called "celery" or set up via `celery --app worker.celery`.
+    startCommand: "celery --app worker.celery worker --loglevel=info --concurrency=4"
+
+    autoDeploy: true
+
+    # Same environment variable as for the FastAPI service, so the worker
+    # knows where to connect to Redis for the broker.
+    envVars:
+      - key: CELERY_BROKER_URL
+        value: "rediss://:YOUR_UPSTASH_PASSWORD@YOUR_UPSTASH_HOST:PORT"
+
+  # 3) Flower Monitoring
+  - type: web
+    name: flower-monitor
+    region: ohio
+    runtime: python
+    plan: free
+
+    buildCommand: "pip install -r requirements.txt"
+
+    # Start the Flower UI. Adjust your Celery app path if needed.
+    startCommand: "celery flower --app worker.celery --loglevel=info --port 10000"
+
+    autoDeploy: true
+
+    # Same broker environment variable so Flower can track your Celery app.
+    envVars:
+      - key: UPSTASH_CONNECTION_LINK
+        sync: false
