@@ -19,9 +19,8 @@ services:
     # Typically you'd set this in the Render Dashboard under "Environment" or "Secrets"
     # rather than hardcode it here.
     envVars:
-      - key: CELERY_BROKER_URL
-        # Example only — replace with your Upstash Redis URL.
-        value: "rediss://:YOUR_UPSTASH_PASSWORD@YOUR_UPSTASH_HOST:PORT"
+      - key: UPSTASH_CONNECTION_LINK
+        sync: false
 
   # 2) Celery Worker
   - type: worker
@@ -40,8 +39,8 @@ services:
     # Same environment variable as for the FastAPI service, so the worker
     # knows where to connect to Redis for the broker.
     envVars:
-      - key: CELERY_BROKER_URL
-        value: "rediss://:YOUR_UPSTASH_PASSWORD@YOUR_UPSTASH_HOST:PORT"
+      - key: UPSTASH_CONNECTION_LINK
+        sync: false
 
   # 3) Flower Monitoring
   - type: web
