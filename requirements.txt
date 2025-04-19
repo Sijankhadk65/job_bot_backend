@@ -10,3 +10,4 @@ flower
 redis
 pymongo
 pydantic
+beanie

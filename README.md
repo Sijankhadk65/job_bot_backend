@@ -73,6 +73,10 @@ This project automates the process of applying for jobs by sending out emails wi
 	# Linux / macOS (or Dockerized deployment)
 	>> celery -A tasks worker --loglevel=info
 
+### ✅ Start the Flower Real Time View
+
+	>> celery -A tasks flower --port=5555
+
 ### 🧾 Example Curl Request
 
     >> curl -X POST http://localhost:8000/send-mails \
