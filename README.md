@@ -10,7 +10,10 @@ This project automates the process of applying for jobs by sending out emails wi
 ---
 ## 📁 Table Of Contents
 
-    |
+    |-config/            <- Configuration (For Now Beanie and MongoDB)
+	|-database/          <- Database Related Tasks
+	|-models/			 <- Models representing different data Tables/Collections
+	|-routes/            <- Routes fro different API endpoints
     |-main.py
     |-email_utils.py
     |-requirements.txt   <- Installs the required python pacakges
