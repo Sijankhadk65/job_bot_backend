@@ -57,7 +57,7 @@ This project automates the process of applying for jobs by sending out emails wi
 ## 🧪 How to Run the Project
 
 ### ✅ Start the FastAPI Server
-	>> uvicorn main:app --reload
+	>> uvicorn app:app --reload
 
 ### ✅ Start the Redis Server
 ***If you’re using Docker (recommended):***
