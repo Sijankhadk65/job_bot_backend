@@ -5,5 +5,8 @@ uvicorn[standard]
 jinja2
 python-multipart
 celery[redis]
+redis
 flower
 redis
+pymongo
+pydantic

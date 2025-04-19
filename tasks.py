@@ -7,18 +7,20 @@ def test_task(name: str):
     print(f"Hello from the task to {name}")
 
 
-# @celery_app.task
-# def send_bulk_email_task(
-#     sender,
-#     password,
-#     subject,
-#     body,
-#     attachment_paths,
-# ):
-#     send_bulk_emails(
-#         sender=sender,
-#         password=password,
-#         subject=subject,
-#         body=body,
-#         attachment_paths=attachment_paths,
-#     )
+@celery_app.task
+def send_bulk_email_task(
+    sender,
+    password,
+    subject,
+    body,
+    attachment_paths,
+    companies,
+):
+    send_bulk_emails(
+        sender=sender,
+        password=password,
+        subject=subject,
+        body=body,
+        attachment_paths=attachment_paths,
+        companies=companies,
+    )

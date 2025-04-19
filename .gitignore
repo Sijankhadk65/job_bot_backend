@@ -3,6 +3,7 @@ attachments/
 temp_uploads/
 .pycache/
 __pycache__/
+.pytest_cache/
 .conda/
 data/
 

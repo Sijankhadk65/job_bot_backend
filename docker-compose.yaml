@@ -1,0 +1,22 @@
+services:
+  web:
+    build: .
+    container_name: fastapi-web
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+
+  worker:
+    build: .
+    container_name: fastapi-worker
+    command: celery -A app.worker worker --loglevel=info
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped

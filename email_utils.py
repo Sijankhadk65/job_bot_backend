@@ -1,10 +1,13 @@
-import pandas as pd
 import smtplib
 import csv
 from datetime import datetime
 from email.message import EmailMessage
 from pathlib import Path
 from dotenv import load_dotenv
+from models import Company
+from typing import List
+
+load_dotenv()
 
 LOG_FILE = "data/send_log.csv"
 
@@ -38,9 +41,8 @@ def send_email(
 
     # Replace placeholders in the body (e.g., {name}, {company})
     personalized_body = (
-        body.replace("{company}", company)
-        .replace("{street}", street)
-        .replace("{postalCode}", postalCode)
+        body.replace("{company}", company).replace("{street}", street)
+        # .replace("{postalCode}", str(postalCode))
         .replace("{city}", city)
     )
     msg.set_content(personalized_body)
@@ -75,31 +77,25 @@ def send_bulk_emails(
     subject,
     body,
     attachment_paths,
+    companies,
 ):
-    df = pd.read_excel("data/applications.xlsx")
-
-    for _, row in df.iterrows():
-        email = row["email"]
-        company = row["CompanyName1"] + row["CompanyName2"] + row["CompanyName3"]
-        street = row["Street"]
-        postalCode = row["PostalCode"]
-        city = row["City"]
-
-        if email != "":
+    print("🕚 Sending Email To selected Companies...")
+    for company in companies:
+        if company["contact"]["email"] != None:
             status = send_email(
                 sender=sender,
                 password=password,
                 subject=subject,
                 body=body,
-                recipient=email,
-                company=company,
+                recipient=company["contact"]["email"],
+                company=company["companyNames"]["primary"],
                 attachments=attachment_paths,
-                street=street,
-                postalCode=postalCode,
-                city=city,
+                street=company["address"]["street"],
+                postalCode=company["address"]["postalCode"],
+                city=company["address"]["city"],
             )
             status_str = "sent" if status else "failed"
         else:
-            print(f"❌ Failed to send to {company}: No email available")
+            print(f"❌ Failed to send:  No email available")
             status_str = "No email"
-        log_email_result("", company, status_str)
+        log_email_result("", company["companyNames"]["primary"], status_str)

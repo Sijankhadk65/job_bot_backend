@@ -82,7 +82,7 @@ This project automates the process of applying for jobs by sending out emails wi
 	    -F "subject=My Job Application" \
 	    -F "body=Dear {name}, I am applying to {company}." \
 	    -F "cv=@attachments/CVs/my_cv.pdf" \
-		-F"cover_letter=@attachments/CoverLetters/my_cover_letter.pdf" \
+		-F "cover_letter=@attachments/CoverLetters/my_cover_letter.pdf" \
 		-F "reference_letter=@attachments/ReferenceLetters/my_ref.pdf"
 ---
 ## ✅ How to Use the Project
