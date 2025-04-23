@@ -2,11 +2,11 @@ import os
 from uuid import uuid4
 import shutil
 from fastapi import APIRouter
-from tasks import send_bulk_email_task
+from tasks import send_bulk_email_task, test_task
 from dotenv import load_dotenv
 from database.database import *
+from beanie.operators import In, And
 from fastapi import (
-    FastAPI,
     Request,
     HTTPException,
     status,
@@ -38,6 +38,11 @@ def verify_token(request: Request):
         )
 
 
+@router.get("/test_emails")
+async def test_emails():
+    test_task.delay("Sijan")
+
+
 @router.post("/")
 async def trigger_bulk_email(
     _: None = Depends(verify_token),
@@ -45,12 +50,17 @@ async def trigger_bulk_email(
     password: str = Form(...),
     subject: str = Form(...),
     body: str = Form(...),
-    cv: UploadFile = File(...),
-    reference_letter: UploadFile = File(...),
+    categories: List[str] = Form(None),
+    attachments: List[UploadFile] = File(None),
 ):
     # Save uploaded files to a temp folder
     temp_dir = f"temp_uploads/{uuid4()}"
     os.makedirs(temp_dir, exist_ok=True)
+
+    print("Sending emails...")
+    print(f"The send is: {email}")
+
+    filters = []
 
     def save_upload(file: UploadFile, name: str) -> str:
         file_path = f"{temp_dir}/{name}"
@@ -58,14 +68,23 @@ async def trigger_bulk_email(
             shutil.copyfileobj(file.file, buffer)
         return file_path
 
-    try:
-        cv_path = save_upload(cv, "cv.pdf")
-        ref_path = save_upload(reference_letter, "reference_letter.pdf")
+    try:        
+        attachment_paths = []
+        for attachment in attachments:
+           attachment_paths.append(save_upload(attachment,attachment.filename))
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
+    
+    codes = []
+    
+    print("🕚 Fetching Categorized Codes from Database...")
+    for category in categories:
+        category_codes = await retrive_category_codes(category)
+        codes.extend(category_codes)
 
-    print("🕚 Fetching Emails from Database...")
-    companies = await retrive_companies()
+    print("🕚 Fetching Companies from Database...")
+    companies = await retrive_coded_companies(In("branchCodes", codes))
     print(f"✅ Email Data Fetched: {len(companies)} Fetched")
     companies_dict_list = [c.model_dump(exclude={"id", "_id"}) for c in companies]
 
@@ -74,7 +93,8 @@ async def trigger_bulk_email(
         password=password,
         subject=subject,
         body=body,
-        attachment_paths=[cv_path, ref_path],
+        attachment_paths=attachment_paths,
         companies=companies_dict_list,
     )
-    return {"message": "Bulk email process completed", "results": result.id}
+    
+    return {"message": "Router reached"}

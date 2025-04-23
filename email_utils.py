@@ -1,7 +1,9 @@
 import smtplib
 import csv
 from datetime import datetime
-from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 from pathlib import Path
 from dotenv import load_dotenv
 from models import Company
@@ -34,7 +36,7 @@ def send_email(
     postalCode,
     city,
 ):
-    msg = EmailMessage()
+    msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = sender
     msg["To"] = recipient
@@ -45,16 +47,16 @@ def send_email(
         # .replace("{postalCode}", str(postalCode))
         .replace("{city}", city)
     )
-    msg.set_content(personalized_body)
+    msg.attach(MIMEText(personalized_body,"html"))
 
     for filepath in attachments:
         try:
             with open(filepath, "rb") as f:
                 file_data = f.read()
                 filename = Path(filepath).name
-                msg.add_attachment(
-                    file_data, maintype="application", subtype="pdf", filename=filename
-                )
+                part = MIMEApplication(file_data, Name=filename)
+                part["Content-Disposition"] = f'attachment; filename="{filename}"'
+                msg.attach(part)
         except FileNotFoundError:
             print(f"Failed to attach file {filepath}: {e}")
             return False

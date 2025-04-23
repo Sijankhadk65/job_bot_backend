@@ -10,11 +10,11 @@ router = APIRouter()
     response_description="List of all the categories",
     response_model=Response,
 )
-async def get_categories():
+async def get_codes():
     categories = await retrive_categories()
     return {
         "status_code": 200,
         "response_type": "success",
-        "description": "Categories",
+        "description": "codes",
         "data": categories,
     }
