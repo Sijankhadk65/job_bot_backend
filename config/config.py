@@ -16,6 +16,6 @@ class Settings(BaseSettings):
 async def initiate_database():
     client = AsyncIOMotorClient("mongodb://localhost:27017/")
     await init_beanie(
-        database=client.get_database("job_bot_db_dev"),
+        database=client.get_database("job_bot_db"),
         document_models=models.__all__,
     )

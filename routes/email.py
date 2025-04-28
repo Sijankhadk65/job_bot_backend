@@ -51,6 +51,7 @@ async def trigger_bulk_email(
     subject: str = Form(...),
     body: str = Form(...),
     categories: List[str] = Form(None),
+    regions: List[str] = Form(None),
     attachments: List[UploadFile] = File(None),
 ):
     # Save uploaded files to a temp folder
@@ -82,19 +83,27 @@ async def trigger_bulk_email(
     for category in categories:
         category_codes = await retrive_category_codes(category)
         codes.extend(category_codes)
+     
 
     print("🕚 Fetching Companies from Database...")
-    companies = await retrive_coded_companies(In("branchCodes", codes))
-    print(f"✅ Email Data Fetched: {len(companies)} Fetched")
-    companies_dict_list = [c.model_dump(exclude={"id", "_id"}) for c in companies]
+    companies_from_region = await retrive_coded_companies(In("location.bundesland", regions))
+    companies_from_region_dict = [c.model_dump(exclude={"id", "_id"}) for c in companies_from_region]
 
+    queried_companies = []
+
+    for company in companies_from_region_dict:
+        if any(code in codes for code in company["branchCodes"]):
+            queried_companies.append(company)
+    
+    print(f"✅ Company Data Fetched: {len(queried_companies)}")
+    
     result = send_bulk_email_task.delay(
         sender=email,
         password=password,
         subject=subject,
         body=body,
         attachment_paths=attachment_paths,
-        companies=companies_dict_list,
+        companies=queried_companies,
     )
     
-    return {"message": "Router reached"}
+    return {"message": " Task executed, Messages Being Sent"}

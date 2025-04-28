@@ -6,6 +6,7 @@ from routes.code import router as CodeRouter
 from routes.email import router as EmailRouter
 from routes.company import router as CompanyRouter
 from routes.category import router as CategoryRouter
+from routes.region import router as LandRouter
 
 app = FastAPI()
 
@@ -33,3 +34,4 @@ app.include_router(CodeRouter, tags=["Code"], prefix="/codes")
 app.include_router(CompanyRouter, tags=["Company"], prefix="/companies")
 app.include_router(EmailRouter, tags=["Email"], prefix="/send_emails")
 app.include_router(CategoryRouter, tags=["Category"], prefix="/categories")
+app.include_router(LandRouter, tags=["Bundesland"], prefix="/regions")

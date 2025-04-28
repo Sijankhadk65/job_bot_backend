@@ -2,10 +2,12 @@ from typing import List
 from models.code import Code
 from models.company import Company
 from models.category import Category
+from models.region import Region
 
 code_collection = Code
 company_collection = Company
 category_collection = Category
+regions_collection = Region
 
 
 async def retrive_codes() -> List[Code]:
@@ -26,8 +28,12 @@ async def retrive_companies() -> List[Company]:
     return companies
 
 
-async def retrive_coded_companies(filters) -> List[Company]:
+async def retrive_coded_companies(filter) -> List[Company]:
     companies = await company_collection.find(
-        filters
+        filter
     ).to_list()
     return companies
+
+async def retrive_regions() -> List[Region]:
+    lands = await regions_collection.all().to_list()
+    return lands
