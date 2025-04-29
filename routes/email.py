@@ -88,16 +88,16 @@ async def trigger_bulk_email(
     print("🕚 Fetching Companies from Database...")
     companies_from_region = await retrive_coded_companies(In("location.bundesland", regions))
     companies_from_region_dict = [c.model_dump(exclude={"id", "_id"}) for c in companies_from_region]
-
+    print(f"✅ Company Data Fetched with cities: {len(companies_from_region_dict)}")
     queried_companies = []
 
     for company in companies_from_region_dict:
         if any(code in codes for code in company["branchCodes"]):
             queried_companies.append(company)
     
-    print(f"✅ Company Data Fetched: {len(queried_companies)}")
+    print(f"✅ Company Data Fetched with codes: {len(queried_companies)}")
     
-    result = send_bulk_email_task.delay(
+    send_bulk_email_task.delay(
         sender=email,
         password=password,
         subject=subject,

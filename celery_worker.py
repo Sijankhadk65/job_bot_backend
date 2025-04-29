@@ -4,7 +4,7 @@ from celery import Celery
 
 load_dotenv()
 
-connection_link = os.getenv("UPSTASH_CONNECTION_LINK")
+connection_link = "redis://localhost:6379/0"
 
 # This must match the same name you'll use in your task file
 celery_app = Celery(

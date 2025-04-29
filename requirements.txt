@@ -11,3 +11,4 @@ redis
 pymongo
 pydantic
 beanie
+pydantic_settings

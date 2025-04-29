@@ -44,7 +44,7 @@ def send_email(
     # Replace placeholders in the body (e.g., {name}, {company})
     personalized_body = (
         body.replace("{company}", company).replace("{street}", street)
-        # .replace("{postalCode}", str(postalCode))
+        .replace("{postalCode}", str(postalCode))
         .replace("{city}", city)
     )
     msg.attach(MIMEText(personalized_body,"html"))
