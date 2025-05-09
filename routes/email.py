@@ -49,7 +49,7 @@ async def batched_emails(
     password: str = Form(...),
     subject: str = Form(...),
     body: str = Form(...),
-    # attachments: List[UploadFile] = File(None),
+    attachments: List[UploadFile] = File(None),
     categories: List[str] = Form(None),
     regions: List[str] = Form(None),
 ):
@@ -60,19 +60,19 @@ async def batched_emails(
     print(f"The send is: {email}")
 
 
-    # def save_upload(file: UploadFile, name: str) -> str:
-    #     file_path = f"{temp_dir}/{name}"
-    #     with open(file_path, "wb") as buffer:
-    #         shutil.copyfileobj(file.file, buffer)
-    #     return file_path
+    def save_upload(file: UploadFile, name: str) -> str:
+        file_path = f"{temp_dir}/{name}"
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        return file_path
 
-    # try:
-    #     attachment_paths = []
-    #     for attachment in attachments:
-    #         attachment_paths.append(save_upload(attachment, attachment.filename))
+    try:
+        attachment_paths = []
+        for attachment in attachments:
+            attachment_paths.append(save_upload(attachment, attachment.filename))
 
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
 
     send_batched_emails.delay(
         sender=email,
