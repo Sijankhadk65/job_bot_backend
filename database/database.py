@@ -23,8 +23,8 @@ async def retrive_category_codes(category: str) -> List[Code]:
     return categorized_codes.codes
 
 
-async def retrive_companies() -> List[Company]:
-    companies = await company_collection.all().to_list()
+async def retrive_companies(limit: int) -> List[Company]:
+    companies = await company_collection.all().limit(limit).to_list()
     return companies
 
 

@@ -2,7 +2,7 @@ import os
 from uuid import uuid4
 import shutil
 from fastapi import APIRouter
-from tasks import send_bulk_email_task, test_task
+from tasks import send_batched_emails, send_bulk_email_task, test_task
 from dotenv import load_dotenv
 from database.database import *
 from beanie.operators import In, And
@@ -43,6 +43,50 @@ async def test_emails():
     test_task.delay("Sijan")
 
 
+@router.post("/batch")
+async def batched_emails(
+    email: str = Form(...),
+    password: str = Form(...),
+    subject: str = Form(...),
+    body: str = Form(...),
+    # attachments: List[UploadFile] = File(None),
+    categories: List[str] = Form(None),
+    regions: List[str] = Form(None),
+):
+    temp_dir = f"temp_uploads/{uuid4()}"
+    os.makedirs(temp_dir, exist_ok=True)
+
+    print("Sending emails...")
+    print(f"The send is: {email}")
+
+
+    # def save_upload(file: UploadFile, name: str) -> str:
+    #     file_path = f"{temp_dir}/{name}"
+    #     with open(file_path, "wb") as buffer:
+    #         shutil.copyfileobj(file.file, buffer)
+    #     return file_path
+
+    # try:
+    #     attachment_paths = []
+    #     for attachment in attachments:
+    #         attachment_paths.append(save_upload(attachment, attachment.filename))
+
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
+
+    send_batched_emails.delay(
+        sender=email,
+        password=password,
+        subject=subject,
+        body=body,
+        attachment_paths=[],
+        categories=categories,
+        regions=regions,
+    )
+
+    return {"categories": categories, "regions": regions, "companies": []}
+
+
 @router.post("/")
 async def trigger_bulk_email(
     _: None = Depends(verify_token),
@@ -69,34 +113,37 @@ async def trigger_bulk_email(
             shutil.copyfileobj(file.file, buffer)
         return file_path
 
-    try:        
+    try:
         attachment_paths = []
         for attachment in attachments:
-           attachment_paths.append(save_upload(attachment,attachment.filename))
+            attachment_paths.append(save_upload(attachment, attachment.filename))
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
-    
+
     codes = []
-    
+
     print("🕚 Fetching Categorized Codes from Database...")
     for category in categories:
         category_codes = await retrive_category_codes(category)
         codes.extend(category_codes)
-     
 
     print("🕚 Fetching Companies from Database...")
-    companies_from_region = await retrive_coded_companies(In("location.bundesland", regions))
-    companies_from_region_dict = [c.model_dump(exclude={"id", "_id"}) for c in companies_from_region]
+    companies_from_region = await retrive_coded_companies(
+        In("location.bundesland", regions)
+    )
+    companies_from_region_dict = [
+        c.model_dump(exclude={"id", "_id"}) for c in companies_from_region
+    ]
     print(f"✅ Company Data Fetched with cities: {len(companies_from_region_dict)}")
     queried_companies = []
 
     for company in companies_from_region_dict:
         if any(code in codes for code in company["branchCodes"]):
             queried_companies.append(company)
-    
+
     print(f"✅ Company Data Fetched with codes: {len(queried_companies)}")
-    
+
     send_bulk_email_task.delay(
         sender=email,
         password=password,
@@ -105,5 +152,5 @@ async def trigger_bulk_email(
         attachment_paths=attachment_paths,
         companies=queried_companies,
     )
-    
+
     return {"message": " Task executed, Messages Being Sent"}
