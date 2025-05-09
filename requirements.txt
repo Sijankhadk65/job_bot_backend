@@ -12,3 +12,4 @@ pymongo
 pydantic
 beanie
 pydantic_settings
+asyncio
